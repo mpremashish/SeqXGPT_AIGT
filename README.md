@@ -10,10 +10,12 @@ All the data files for corresponding models can found inside : https://github.co
 
 Need to deploy api's corresponding to various models for inference of perplexities present in https://github.com/mpremashish/SeqXGPT_AIGT/blob/main/SeqXGPT_AIGT/backend_model.py, commands for the api deployment:
 
+```
 python backend_api.py --port 6006 --timeout 30000 --debug --model=gpt2 --gpu=0
 python backend_api.py --port 6007 --timeout 30000 --debug --model=gptneo --gpu=0
 python backend_api.py --port 6008 --timeout 30000 --debug --model=gptj --gpu=0
 python backend_api.py --port 6009 --timeout 30000 --debug --model=llama --gpu=0
+```
 
 Once we have deployed our model and all the models are exposed as an api, we can get the features and form new files by running the note book : https://github.com/mpremashish/SeqXGPT_AIGT/blob/main/SeqXGPT_AIGT/dataset/gen_feature.ipynb
 
@@ -35,11 +37,15 @@ Move them accordingly for training to https://github.com/mpremashish/SeqXGPT_AIG
 
 For training for multiclass, run  (run in the model in following https://github.com/mpremashish/SeqXGPT_AIGT/tree/main/SeqXGPT_AIGT):
 
+```
 python ./SeqXGPT/train.py --gpu=0 --split_dataset --data_path=./SeqXGPT --train_path=./SeqXGPT/train.jsonl --test_path=./SeqXGPT/test.jsonl
+```
 
 For training for binary, run  (run in the model in following https://github.com/mpremashish/SeqXGPT_AIGT/tree/main/SeqXGPT_AIGT):
 
+```
 python ./SeqXGPT/train.py --gpu=0 --split_dataset --data_path=./SeqXGPT --train_path=./SeqXGPT/train.jsonl --test_path=./SeqXGPT/test.jsonl --mixed_model_binary
+```
 
 # Testing
 
