@@ -4,16 +4,37 @@ import argparse
 from mosec import Server
 from collections import OrderedDict
 from backend_model import (SnifferGPTNeoModel, 
-                           SnifferGPT2Model, 
-                           SnifferGPTJModel,  
-                           SnifferLlamaModel)
+                          SnifferGPT2Model, 
+                          SnifferGPTJModel,  
+                          SnifferLlamaModel,
+                          SnifferWenZhongModel,
+                          SnifferSkyWorkModel,
+                          SnifferDaMoModel,
+                          SnifferChatGLMModel,
+                          SnifferLlama3Model,
+                          SnifferGPT2FrenchModel,
+                          SnifferGPTJFrenchModel,
+                          SnifferLlamaFrenchModel,
+                          SnifferGPTNeoChineseModel,
+                          SnifferLlamaChineseModel)
 from backend_t5 import T5
 
 MODEL_MAPPING_NAMES = OrderedDict([
     ("gpt2", SnifferGPT2Model),
+    ("gpt2French", SnifferGPT2FrenchModel),
     ("gptneo", SnifferGPTNeoModel),
+    ("gptneoChinese", SnifferGPTNeoChineseModel),
     ("gptj", SnifferGPTJModel),
-    ("llama", SnifferLlamaModel)
+    ("gptjFrench", SnifferGPTJFrenchModel),
+    ("llama", SnifferLlamaModel),
+    ("llamaFrench", SnifferLlamaFrenchModel),
+    ("llamaChinese", SnifferLlamaChineseModel),
+    ("wenzhong",SnifferWenZhongModel),
+    ("skywork",SnifferSkyWorkModel),
+    ("damo",SnifferDaMoModel),
+    ("chatglm",SnifferChatGLMModel),
+    ("llama3",SnifferLlama3Model),
+    
 ])
 
 

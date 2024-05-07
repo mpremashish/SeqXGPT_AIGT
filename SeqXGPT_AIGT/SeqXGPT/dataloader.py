@@ -12,6 +12,11 @@ from datasets import Dataset, DatasetDict
 from transformers import AutoTokenizer
 from torch.utils.data.dataloader import DataLoader, RandomSampler, SequentialSampler
 from sklearn.preprocessing import normalize
+from langdetect import detect
+import nltk
+nltk.download('punkt')
+
+from nltk.tokenize import sent_tokenize, word_tokenize
 
 
 def set_seed(seed):
@@ -201,19 +206,27 @@ class DataManager:
             words = ["▁" if item == " " else item for item in words]
         return words
 
+    def _split_fr_sentence(self, sentence, use_sp=False):
+        return word_tokenize(sentence, language='french')
 
     def _split_cn_sentence(self, sentence, use_sp=False):
         words = list(sentence)
         if use_sp:
             words = ["▁" if item == " " else item for item in words]
         return words
+    
+    def detect_language(self, sentence):
+        print('sentence' + sentence)
+        return detect(sentence)
 
-
-    def split_sentence(self, sentence, use_sp=False, cn_percent=0.2):
+    def split_sentence(self, sentence, use_sp=False, cn_percent=0.2, train_mode='en'):
         total_char_count = len(sentence)
         total_char_count += 1 if total_char_count == 0 else 0
         chinese_char_count = sum('\u4e00' <= char <= '\u9fff' for char in sentence)
-        if chinese_char_count / total_char_count > cn_percent:
-            return self._split_cn_sentence(sentence, use_sp)
-        else:
-            return self._split_en_sentence(sentence, use_sp)
+        french_char_count = sum('\u0000' <= char <= '\u017F' for char in sentence)
+        # if chinese_char_count / total_char_count > cn_percent or train_mode=='zh_cn':
+        #     return self._split_cn_sentence(sentence, use_sp)
+        # elif french_char_count / total_char_count > cn_percent:
+        return self._split_fr_sentence(sentence, use_sp)
+        # else:
+        #     return self._split_en_sentence(sentence, use_sp)

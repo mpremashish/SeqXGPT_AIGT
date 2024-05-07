@@ -7,7 +7,8 @@ import numpy as np
 import warnings
 import torch.nn.functional as F
 import torch.nn as nn
-
+import re
+from langdetect import detect
 
 from tqdm import tqdm, trange
 from sklearn.metrics import precision_score, recall_score
@@ -22,6 +23,7 @@ if project_path not in sys.path:
     
 from dataloader import DataManager
 from model import ModelWiseTransformerClassifier
+import jieba
 
 
 
@@ -142,8 +144,9 @@ class SupervisedTrainer:
 
         # sent level evalation
         print("*" * 8, "Sentence Level Evalation", "*" * 8)
-        sent_result, errors = self.sent_level_eval(texts, true_labels, pred_labels)
+        sent_result, errors, correct = self.sent_level_eval(texts, true_labels, pred_labels)
         self.write_to_file('errors_analysis',errors)
+        self.write_to_file('correct_analysis',errors)
         
         # word level evalation
         print("*" * 8, "Word Level Evalation", "*" * 8)
@@ -190,29 +193,50 @@ class SupervisedTrainer:
         true_sent_labels = []
         pred_sent_labels = []
         errors = []
+        correct = []
+        print(len(true_labels))
+        print(len(pred_labels))
         for text, true_label, pred_label in zip(texts, true_labels, pred_labels):
             true_sent_label = self.get_sent_label(text, true_label)
             pred_sent_label = self.get_sent_label(text, pred_label)
-            
+           
+                
             if pred_sent_label != true_sent_label and len(errors) < 5: 
                 errors.append((text, pred_sent_label, true_sent_label))
+                
+            if pred_sent_label == true_sent_label and len(correct) < 5:
+                correct.append((text, pred_sent_label, true_sent_label))
                 
             true_sent_labels.extend(true_sent_label)
             pred_sent_labels.extend(pred_sent_label)            
         
         true_sent_labels = [self.en_labels[label] for label in true_sent_labels]
         pred_sent_labels = [self.en_labels[label] for label in pred_sent_labels]
+        # if len(true_sent_labels) > len(pred_sent_labels):
+        #     true_sent_labels = true_sent_labels[:len(pred_sent_labels)]
+        # else:
+        #     pred_sent_labels = pred_sent_labels[:len(true_sent_labels)]
         result = self._get_precision_recall_acc_macrof1(true_sent_labels, pred_sent_labels)
-        return result, errors
+        return result, errors, correct
 
     def get_sent_label(self, text, label):
-        import nltk
-        sent_separator = nltk.data.load('tokenizers/punkt/english.pickle')
-        sents = sent_separator.tokenize(text)
+        
+        if self.detect_language(text) == 'zh-cn':
+            sents = self.split_chinese_sentences(text)
+        if self.detect_language(text) == 'fr':
+            import nltk
+            sent_separator = nltk.data.load('tokenizers/punkt/french.pickle')
+            sents = sent_separator.tokenize(text)
+        else:
+            import nltk
+            sent_separator = nltk.data.load('tokenizers/punkt/english.pickle')
+            sents = sent_separator.tokenize(text)
 
         offset = 0
         sent_label = []
         for sent in sents:
+            # if len(sent) == 0:
+            #     continue
             start = text[offset:].find(sent) + offset
             end = start + len(sent)
             offset = end
@@ -230,6 +254,21 @@ class SupervisedTrainer:
         if len(sent_label) == 0:
             print("empty sent label list")
         return sent_label
+    
+
+    def detect_language(self, sentence):
+        return detect(sentence)
+    
+    def split_chinese_sentences(self, text):
+        
+         
+        # Define a regular expression pattern to match Chinese punctuation marks
+        pattern = '[。？！]'
+
+        # Split the text using the pattern
+        sentences = re.split(pattern, text)
+
+        return sentences
     
     def _get_most_common_tag(self, tags):
         """most_common_tag is a tuple: (tag, times)"""
@@ -326,6 +365,8 @@ def parse_args():
     parser.add_argument('--do_test', action='store_true')
     parser.add_argument('--test_content', action='store_true')
     parser.add_argument('--mixed_model_binary', action='store_true')
+    parser.add_argument('--just_split', action='store_true')
+    parser.add_argument('--use_saved_model', action='store_true')
     
     return parser.parse_args()
 
@@ -337,6 +378,11 @@ if __name__ == "__main__":
     if args.split_dataset:
         print("Log INFO: split dataset...")
         split_dataset(data_path=args.data_path, train_path=args.train_path, test_path=args.test_path, train_ratio=args.train_ratio)
+        
+    if args.just_split :
+        print("Log INFO: split dataset...")
+        split_dataset(data_path=args.data_path, train_path=args.train_path, test_path=args.test_path, train_ratio=args.train_ratio)
+        sys.exit()
 
     en_labels = {
         'gpt2': 0,
@@ -358,9 +404,8 @@ if __name__ == "__main__":
     """linear classify"""
     if args.train_mode == 'classify':
         print('-' * 32 + 'classify' + '-' * 32)
-        classifier = ModelWiseTransformerClassifier(id2labels=id2label, seq_len=args.seq_len)
         ckpt_name = 'linear_en.pt'
-
+        classifier = ModelWiseTransformerClassifier(id2labels=id2label, seq_len=args.seq_len)
         trainer = SupervisedTrainer(data, classifier, en_labels, id2label, args)
 
         if args.do_test:    
@@ -369,5 +414,8 @@ if __name__ == "__main__":
             trainer.model.load_state_dict(saved_model.state_dict())
             trainer.test(content_level_eval=args.test_content)
         else:
+            if args.use_saved_model:
+                saved_model = torch.load(ckpt_name)
+                trainer.model.load_state_dict(saved_model.state_dict())
             print("Log INFO: do train...")
             trainer.train(ckpt_name=ckpt_name)
