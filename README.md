@@ -68,7 +68,7 @@ After Test you will find a error analysis file named errors_analysis for 5 text 
 
 # Multilingual
 
-We made the model lingual by making tokenization changes and using different perplexity generation models. We made model multilingual especially to understand french and chinese. We need to train the on top of already trained model, following command we help up us achieve that. All the multilingual dataset can be found in drive provided above
+We made the model lingual by making tokenization changes and using different perplexity generation models. We made model multilingual especially to understand french and chinese. We need to train on the top of already trained model, following command we help up us achieve that. All the multilingual dataset can be found in drive provided above
 
 ```
 python ./SeqXGPT/train.py --gpu=0 --split_dataset --data_path=./SeqXGPT --train_path=./SeqXGPT/train.jsonl --test_path=./SeqXGPT/test.jsonl --used_saved_model
