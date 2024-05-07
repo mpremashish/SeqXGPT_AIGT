@@ -73,3 +73,11 @@ We made the model lingual by making tokenization changes and using different per
 ```
 python ./SeqXGPT/train.py --gpu=0 --split_dataset --data_path=./SeqXGPT --train_path=./SeqXGPT/train.jsonl --test_path=./SeqXGPT/test.jsonl --used_saved_model
 ```
+
+# Evaluation multilingual
+
+We did the evaluation on multilingual dataset using binary classification of AI and Human using below command
+
+```
+python ./SeqXGPT/train.py --gpu=0 --split_dataset --data_path=./SeqXGPT --train_path=./SeqXGPT/train.jsonl --test_path=./SeqXGPT/test.jsonl --mixed_model_binary
+```
