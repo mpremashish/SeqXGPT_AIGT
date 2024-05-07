@@ -224,9 +224,9 @@ class DataManager:
         total_char_count += 1 if total_char_count == 0 else 0
         chinese_char_count = sum('\u4e00' <= char <= '\u9fff' for char in sentence)
         french_char_count = sum('\u0000' <= char <= '\u017F' for char in sentence)
-        # if chinese_char_count / total_char_count > cn_percent or train_mode=='zh_cn':
-        #     return self._split_cn_sentence(sentence, use_sp)
-        # elif french_char_count / total_char_count > cn_percent:
-        return self._split_fr_sentence(sentence, use_sp)
-        # else:
-        #     return self._split_en_sentence(sentence, use_sp)
+        if chinese_char_count / total_char_count > cn_percent or train_mode=='zh_cn':
+            return self._split_cn_sentence(sentence, use_sp)
+        elif french_char_count / total_char_count > cn_percent:
+            return self._split_fr_sentence(sentence, use_sp)
+        else:
+            return self._split_en_sentence(sentence, use_sp)
